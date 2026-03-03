@@ -36,9 +36,6 @@ Vue.component('product', {
                 <li v-for="size in sizes">{{ size }}</li>
             </ul>
 
-            <div class="cart">
-                <p>Cart({{ cart }})</p>
-            </div>
             <button
                     v-on:click="addToCart"
                     :disabled="!inStock"
@@ -88,14 +85,12 @@ Vue.component('product', {
     },
     methods: {
         addToCart() {
-            this.cart += 1;
+            this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId);
         },
 
         removeFromCart() {
-            this.cart -= 1
-            if (this.cart <= 0) {
-                this.cart = 0
-            }
+            this.$emit("remove-from-cart", this.variants[this.selectedVariant].variantId,
+            );
         },
 
         updateProduct(index) {
@@ -137,6 +132,16 @@ Vue.component('product', {
 let app = new Vue({
     el: '#app',
     data: {
-        premium: true
+        premium: true,
+        cart: [],
     },
+    methods: {
+        updateCart(id) {
+            this.cart.push(id);
+        },
+        removeFromCart(id) {
+            this.cart.pop(id);
+        },
+    },
+
 });
