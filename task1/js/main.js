@@ -111,6 +111,7 @@ Vue.component('product-tabs', {
              <p>{{ review.name }}</p>
              <p>Rating: {{ review.rating }}</p>
              <p>{{ review.review }}</p>
+             {{ review.recommend === 'yes' ? 'Yes' : 'No' }}
            </li>
          </ul>
        </div>
@@ -275,7 +276,7 @@ Vue.component('product', {
             if (this.premium) {
                 return "Free";
             } else {
-                return 2.99
+                return 3
             }
         },
 
