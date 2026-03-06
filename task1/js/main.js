@@ -22,23 +22,26 @@ Vue.component('product-review', {
             
              <p>
                 <label for="name">Name:</label>
-                <input id="name" v-model="name" placeholder="name">
+                <input id="name" v-model="name" placeholder="name" :style="{ border: errors.name[0] ? '1px solid red' : '1px solid black' }">
+                <span v-show="errors.name[0]" style="color: red">{{ errors.name[0] }}</span>
              </p>
     
              <p>
                <label for="review">Review:</label>
-               <textarea id="review" v-model="review"></textarea>
+               <textarea id="review" v-model="review" :style="{ border: errors.review[0] ? '1px solid red' : '1px solid black' }"></textarea>
+               <span v-show="errors.review[0]" style="color: red">{{ errors.review[0] }}</span>
              </p>
     
              <p>
                <label for="rating">Rating:</label>
-               <select id="rating" v-model.number="rating">
+               <select id="rating" v-model.number="rating" :style="{ border: errors.rating[0] ? '1px solid red' : '1px solid black' }">
                  <option>5</option>
                  <option>4</option>
                  <option>3</option>
                  <option>2</option>
                  <option>1</option>
                </select>
+               <span v-show="errors.rating[0]" style="color: red">{{ errors.rating[0] }}</span>
              </p>
              <p>
                <label>Would you recommend this product?</label><br>
@@ -46,6 +49,7 @@ Vue.component('product-review', {
                <label for="recommend-yes">Yes</label>
                <input type="radio" id="recommend-no" value="no" v-model="recommend">
                <label for="recommend-no">No</label>
+               <span v-if="errors.recommend" style="color: red; display: block; margin-top: 5px;">{{ errors.recommend }}</span>
              </p>
             
              <p>
@@ -61,12 +65,36 @@ Vue.component('product-review', {
             review: null,
             rating: null,
             recommend: null,
-            errors: [],
+            errors: {
+                name: [],
+                review: [],
+                rating: [],
+                recommend: ''
+            },
+        }
+    },
+
+    computed: {
+        allErrors() {
+            const errors = [];
+            if (this.errors.name.length) errors.push(...this.errors.name);
+            if (this.errors.review.length) errors.push(...this.errors.review);
+            if (this.errors.rating.length) errors.push(...this.errors.rating);
+            if (this.errors.recommend) errors.push(this.errors.recommend);
+            return errors;
+        },
+        hasErrors() {
+            return this.allErrors.length > 0;
         }
     },
 
     methods:{
         onSubmit() {
+            this.errors.name = [];
+            this.errors.review = [];
+            this.errors.rating = [];
+            this.errors.recommend = '';
+
             if(this.name && this.review && this.rating && this.recommend) {
                 let productReview = {
                     name: this.name,
@@ -79,13 +107,11 @@ Vue.component('product-review', {
                 this.review = null
                 this.rating = null
                 this.recommend = null
-                this.errors = []
             } else {
-                this.errors = [];
-                if(!this.name) this.errors.push("Name required.")
-                if(!this.review) this.errors.push("Review required.")
-                if(!this.rating) this.errors.push("Rating required.")
-                if(!this.recommend) this.errors.push("Please tell us if you would recommend this product.")
+                if(!this.name) this.errors.name.push("Name required.")
+                if(!this.review) this.errors.review.push("Review required.")
+                if(!this.rating) this.errors.rating.push("Rating required.")
+                if(!this.recommend) this.errors.recommend = "Please tell us if you would recommend this product."
             }
         }
 
@@ -246,12 +272,22 @@ Vue.component('product', {
             this.selectedVariant = index;
             console.log(index);
         },
+
+        addReview(productReview) {
+            this.reviews.push(productReview);
+            localStorage.setItem('vue-product-reviews', JSON.stringify(this.reviews));
+        },
     },
 
     mounted() {
         eventBus.$on('review-submitted', productReview => {
-            this.reviews.push(productReview)
+            this.reviews.push(productReview);
+            localStorage.setItem('vue-product-reviews', JSON.stringify(this.reviews));
         })
+        const saved = localStorage.getItem('vue-product-reviews');
+        if (saved) {
+            this.reviews = JSON.parse(saved);
+        }
     },
 
     computed: {
